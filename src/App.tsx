@@ -1,10 +1,22 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import HomePage from "./pages/Index";
+import AuctionsPage from "./pages/Auctions";
+import AuctionDetailPage from "./pages/AuctionDetail";
+import LoginPage from "./pages/Login";
+import RegisterPage from "./pages/Register";
+import UserDashboardPage from "./pages/UserDashboard";
+import AdminDashboardPage from "./pages/admin/Dashboard";
+import AdminVehiclesPage from "./pages/admin/Vehicles";
 import NotFound from "./pages/NotFound";
+import Layout from "./components/Layout";
+import AdminLayout from "./components/admin/AdminLayout";
+import AuthGuard from "./components/auth/AuthGuard";
+import AdminGuard from "./components/auth/AdminGuard";
 
 const queryClient = new QueryClient();
 
@@ -15,8 +27,18 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route element={<Layout />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/auctions" element={<AuctionsPage />} />
+            <Route path="/auction/:id" element={<AuctionDetailPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/dashboard" element={<AuthGuard><UserDashboardPage /></AuthGuard>} />
+          </Route>
+          <Route path="/admin" element={<AdminGuard><AdminLayout /></AdminGuard>}>
+            <Route index element={<AdminDashboardPage />} />
+            <Route path="vehicles" element={<AdminVehiclesPage />} />
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
