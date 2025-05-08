@@ -7,12 +7,15 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { Eye, EyeOff } from "lucide-react";
 
 const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -63,104 +66,129 @@ const Register = () => {
     }
   };
 
+  const toggleShowPassword = () => setShowPassword(!showPassword);
+  const toggleShowConfirmPassword = () => setShowConfirmPassword(!showConfirmPassword);
+
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 bg-gray-100">
       <div className="w-full max-w-md">
-        <div className="bg-white shadow-md rounded-lg p-8">
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold">Crie sua conta</h1>
-            <p className="text-gray-600 mt-2">
-              Cadastre-se para participar dos leilões de veículos
-            </p>
-          </div>
+        <div className="bg-white shadow rounded-sm p-8 text-center">
+          <h1 className="text-2xl font-bold text-vip-blue mb-2">Criar conta</h1>
+          <p className="text-gray-600 text-sm mb-6">
+            Cadastre-se para participar dos leilões de veículos
+          </p>
           
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="name">Nome completo</Label>
+            <div className="text-left">
               <Input
                 id="name"
                 type="text"
-                placeholder="João da Silva"
+                placeholder="Nome completo"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="mt-1"
+                className="vip-input"
               />
             </div>
             
-            <div>
-              <Label htmlFor="email">Email</Label>
+            <div className="text-left">
               <Input
                 id="email"
                 type="email"
-                placeholder="seu@email.com"
+                placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="mt-1"
+                className="vip-input"
               />
             </div>
             
-            <div>
-              <Label htmlFor="password">Senha</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                className="mt-1"
-              />
+            <div className="text-left">
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Senha"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  className="vip-input pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={toggleShowPassword}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 focus:outline-none"
+                >
+                  {showPassword ? (
+                    <EyeOff size={16} />
+                  ) : (
+                    <Eye size={16} />
+                  )}
+                </button>
+              </div>
             </div>
             
-            <div>
-              <Label htmlFor="confirmPassword">Confirme a senha</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="••••••••"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                minLength={6}
-                className="mt-1"
-              />
+            <div className="text-left">
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirmar senha"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  className="vip-input pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={toggleShowConfirmPassword}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 focus:outline-none"
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff size={16} />
+                  ) : (
+                    <Eye size={16} />
+                  )}
+                </button>
+              </div>
             </div>
             
-            <div className="flex items-start">
-              <Checkbox
-                id="terms"
-                checked={acceptTerms}
-                onCheckedChange={(checked) => setAcceptTerms(!!checked)}
-                className="mt-1"
-              />
-              <Label htmlFor="terms" className="ml-2 text-sm text-gray-600">
+            <div className="flex items-start text-left">
+              <div className="flex items-center h-5">
+                <Checkbox
+                  id="terms"
+                  checked={acceptTerms}
+                  onCheckedChange={(checked) => setAcceptTerms(!!checked)}
+                  className="h-4 w-4 border-gray-300"
+                />
+              </div>
+              <Label htmlFor="terms" className="ml-2 text-xs text-gray-600">
                 Eu concordo com os{" "}
-                <Link to="/terms" className="text-accent hover:underline">
+                <Link to="/terms" className="text-vip-blue hover:underline">
                   Termos de Uso
                 </Link>{" "}
                 e{" "}
-                <Link to="/privacy" className="text-accent hover:underline">
+                <Link to="/privacy" className="text-vip-blue hover:underline">
                   Política de Privacidade
                 </Link>
               </Label>
             </div>
             
-            <Button
+            <button
               type="submit"
-              className="w-full bg-accent hover:bg-accent/90"
+              className="w-full bg-vip-blue text-white py-3 font-bold text-sm uppercase rounded-sm hover:bg-vip-blue/90"
               disabled={isLoading}
             >
               {isLoading ? "Cadastrando..." : "Criar conta"}
-            </Button>
+            </button>
           </form>
           
           <div className="text-center mt-6">
-            <p className="text-gray-600">
+            <p className="text-gray-600 text-sm">
               Já tem uma conta?{" "}
-              <Link to="/login" className="text-accent hover:underline font-medium">
+              <Link to="/login" className="text-vip-blue hover:underline font-medium">
                 Faça login
               </Link>
             </p>

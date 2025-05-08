@@ -18,6 +18,10 @@ import AdminLayout from "./components/admin/AdminLayout";
 import AuthGuard from "./components/auth/AuthGuard";
 import AdminGuard from "./components/auth/AdminGuard";
 
+// New VIP Style Pages
+import VIPAuctionsList from "./pages/VIPAuctionsList";
+import VIPAuctionDetail from "./pages/VIPAuctionDetail";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -29,11 +33,15 @@ const App = () => (
         <Routes>
           <Route element={<Layout />}>
             <Route path="/" element={<HomePage />} />
-            <Route path="/auctions" element={<AuctionsPage />} />
-            <Route path="/auction/:id" element={<AuctionDetailPage />} />
+            <Route path="/auctions" element={<VIPAuctionsList />} />
+            <Route path="/auction/:id" element={<VIPAuctionDetail />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/dashboard" element={<AuthGuard><UserDashboardPage /></AuthGuard>} />
+            
+            {/* Original pages kept for reference */}
+            <Route path="/original-auctions" element={<AuctionsPage />} />
+            <Route path="/original-auction/:id" element={<AuctionDetailPage />} />
           </Route>
           <Route path="/admin" element={<AdminGuard><AdminLayout /></AdminGuard>}>
             <Route index element={<AdminDashboardPage />} />

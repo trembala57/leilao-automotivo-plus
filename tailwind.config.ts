@@ -26,18 +26,27 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#0A1E5B", // Azul escuro
+          DEFAULT: "#005168", // VIP Leilões teal blue
           foreground: "#FFFFFF",
-          light: "#1D4ED8",
+          light: "#0078a0",
         },
         secondary: {
-          DEFAULT: "#E2E8F0",
+          DEFAULT: "#f5f5f5", // Light gray
           foreground: "#2D3748",
         },
         accent: {
-          DEFAULT: "#E11D48", // Vermelho vibrante
+          DEFAULT: "#e60000", // VIP Leilões red
           foreground: "#FFFFFF",
-          light: "#FB7185",
+          light: "#ff3333",
+        },
+        vip: {
+          blue: "#005168",
+          lightblue: "#00b9e4", // App button color
+          red: "#e60000",
+          green: "#8cc63f",
+          yellow: "#ffff00",
+          dark: "#1e2939",
+          gray: "#f5f5f5",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
