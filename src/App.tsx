@@ -18,9 +18,10 @@ import AdminLayout from "./components/admin/AdminLayout";
 import AuthGuard from "./components/auth/AuthGuard";
 import AdminGuard from "./components/auth/AdminGuard";
 
-// New VIP Style Pages
+// VIP Style Pages
 import VIPAuctionsList from "./pages/VIPAuctionsList";
 import VIPAuctionDetail from "./pages/VIPAuctionDetail";
+import VehiclesHome from "./pages/VehiclesHome";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => (
         <Routes>
           <Route element={<Layout />}>
             <Route path="/" element={<HomePage />} />
+            <Route path="/veiculos/home" element={<VehiclesHome />} />
             <Route path="/auctions" element={<VIPAuctionsList />} />
             <Route path="/auction/:id" element={<VIPAuctionDetail />} />
             <Route path="/login" element={<LoginPage />} />

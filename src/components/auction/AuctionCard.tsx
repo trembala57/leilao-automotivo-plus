@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { formatCurrency } from "@/lib/format";
 import AuctionTimer from "./AuctionTimer";
@@ -11,11 +10,19 @@ export interface VehicleAuction {
   model: string;
   year: number;
   imageUrl: string;
+  image?: string; // Added for VIPAuctionCard
   currentBid: number;
   minBidIncrement: number;
   endTime: string; // ISO date string
   status: "active" | "scheduled" | "ended";
   bidsCount: number;
+  
+  // Additional fields for VIP Leilões style
+  initialBid?: number;
+  totalBids?: number;
+  location?: string;
+  lotNumber?: string;
+  financing?: boolean;
 }
 
 interface AuctionCardProps {

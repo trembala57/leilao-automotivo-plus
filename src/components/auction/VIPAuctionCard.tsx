@@ -15,16 +15,21 @@ const VIPAuctionCard: React.FC<VIPAuctionCardProps> = ({ auction, showTimer = tr
   const {
     id,
     title,
-    image,
     make,
     model,
     currentBid,
-    initialBid,
     status,
     endTime,
-    totalBids,
-    location,
+    bidsCount,
   } = auction;
+
+  // Use the correct properties or provide fallbacks
+  const image = auction.image || auction.imageUrl;
+  const initialBid = auction.initialBid || Math.floor(currentBid * 0.8);
+  const totalBids = auction.totalBids || bidsCount;
+  const location = auction.location || "São Paulo";
+  const lotNumber = auction.lotNumber || `L${id.substring(0, 5)}`;
+  const financing = auction.financing || false;
 
   return (
     <div className="bg-white border border-gray-200 rounded-sm overflow-hidden h-full flex flex-col">
@@ -56,7 +61,7 @@ const VIPAuctionCard: React.FC<VIPAuctionCardProps> = ({ auction, showTimer = tr
         />
         
         {/* Finance Badge */}
-        {auction.financing && (
+        {financing && (
           <div className="absolute bottom-0 right-0 bg-red-600 text-white text-xs font-bold px-2 py-1 uppercase">
             Financie
           </div>
@@ -66,7 +71,7 @@ const VIPAuctionCard: React.FC<VIPAuctionCardProps> = ({ auction, showTimer = tr
       {/* Auction Details */}
       <div className="p-3 flex flex-col h-full">
         <div className="text-xs text-gray-600 mb-1">
-          Lote: {auction.lotNumber} | Local: {location}
+          Lote: {lotNumber} | Local: {location}
         </div>
         
         <div className="mb-2">
