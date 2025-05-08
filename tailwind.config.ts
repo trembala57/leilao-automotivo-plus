@@ -26,16 +26,18 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#1A365D",
+          DEFAULT: "#0A1E5B", // Azul escuro
           foreground: "#FFFFFF",
+          light: "#1D4ED8",
         },
         secondary: {
           DEFAULT: "#E2E8F0",
           foreground: "#2D3748",
         },
         accent: {
-          DEFAULT: "#ED8936",
+          DEFAULT: "#E11D48", // Vermelho vibrante
           foreground: "#FFFFFF",
+          light: "#FB7185",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
@@ -72,6 +74,10 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+      },
+      fontFamily: {
+        sans: ["Inter", "sans-serif"],
+        heading: ["Montserrat", "sans-serif"],
       },
     },
   },
