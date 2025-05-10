@@ -26,11 +26,11 @@ const VIPAuctionDetail = () => {
     location: "GO",
     lotNumber: "3 (cod 10587)",
     year: 2024,
-    color: "PRATA",
-    fuel: "DIESEL",
+    color: "PRATA", // Now valid in the interface
+    fuel: "DIESEL", // Now valid in the interface
     financing: true,
-    condition: "Excelente",
-    km: 31550,
+    condition: "Excelente", // Now valid in the interface
+    km: 31550, // Now valid in the interface
     image: "https://images.unsplash.com/photo-1571861541250-f44574e4c9df?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
   };
 

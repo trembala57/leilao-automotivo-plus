@@ -9,13 +9,13 @@ export interface VehicleAuction {
   make: string;
   model: string;
   year: number;
-  imageUrl: string;
+  imageUrl?: string;
   image?: string; // Added for VIPAuctionCard
   currentBid: number;
-  minBidIncrement: number;
+  minBidIncrement?: number;
   endTime: string; // ISO date string
   status: "active" | "scheduled" | "ended";
-  bidsCount: number;
+  bidsCount?: number;
   
   // Additional fields for VIP Leilões style
   initialBid?: number;
@@ -23,6 +23,12 @@ export interface VehicleAuction {
   location?: string;
   lotNumber?: string;
   financing?: boolean;
+  
+  // Properties for VIPAuctionDetail
+  color?: string;
+  fuel?: string;
+  condition?: string;
+  km?: number;
 }
 
 interface AuctionCardProps {
