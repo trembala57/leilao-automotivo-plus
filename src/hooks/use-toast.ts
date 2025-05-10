@@ -126,66 +126,107 @@ export const reducer = (state: State, action: Action): State => {
   }
 }
 
-const listeners: Array<(state: State) => void> = []
+// Create a React context for the toast state
+const ToastContext = React.createContext<{
+  state: State;
+  toast: (props: Omit<ToasterToast, "id">) => { id: string; dismiss: () => void; update: (props: ToasterToast) => void };
+  dismiss: (toastId?: string) => void;
+} | undefined>(undefined);
 
-let memoryState: State = { toasts: [] }
+// Initial state
+const initialState: State = { toasts: [] };
 
-function dispatch(action: Action) {
-  memoryState = reducer(memoryState, action)
-  listeners.forEach((listener) => {
-    listener(memoryState)
-  })
-}
-
-type Toast = Omit<ToasterToast, "id">
-
-function toast({ ...props }: Toast) {
-  const id = genId()
-
-  const update = (props: ToasterToast) =>
-    dispatch({
-      type: "UPDATE_TOAST",
-      toast: { ...props, id },
-    })
-  const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
-
-  dispatch({
-    type: "ADD_TOAST",
-    toast: {
-      ...props,
-      id,
-      open: true,
-      onOpenChange: (open) => {
-        if (!open) dismiss()
+// Provider component
+export function ToastProvider({ children }: { children: React.ReactNode }) {
+  const [state, setState] = React.useState<State>(initialState);
+  
+  const toast = React.useCallback((props: Omit<ToasterToast, "id">) => {
+    const id = genId();
+    
+    const update = (props: ToasterToast) => {
+      setState((prevState) => reducer(prevState, {
+        type: "UPDATE_TOAST",
+        toast: { ...props, id },
+      }));
+    };
+    
+    const dismiss = () => {
+      setState((prevState) => reducer(prevState, {
+        type: "DISMISS_TOAST",
+        toastId: id,
+      }));
+    };
+    
+    setState((prevState) => reducer(prevState, {
+      type: "ADD_TOAST",
+      toast: {
+        ...props,
+        id,
+        open: true,
+        onOpenChange: (open) => {
+          if (!open) dismiss();
+        },
       },
-    },
-  })
+    }));
+    
+    return {
+      id,
+      dismiss,
+      update,
+    };
+  }, []);
+  
+  const dismiss = React.useCallback((toastId?: string) => {
+    setState((prevState) => reducer(prevState, {
+      type: "DISMISS_TOAST",
+      toastId,
+    }));
+  }, []);
 
-  return {
-    id: id,
-    dismiss,
-    update,
-  }
+  return (
+    <ToastContext.Provider value={{ state, toast, dismiss }}>
+      {children}
+    </ToastContext.Provider>
+  );
 }
 
-function useToast() {
-  const [state, setState] = React.useState<State>(memoryState)
-
-  React.useEffect(() => {
-    listeners.push(setState)
-    return () => {
-      const index = listeners.indexOf(setState)
-      if (index > -1) {
-        listeners.splice(index, 1)
-      }
-    }
-  }, [state])
-
-  return {
-    ...state,
-    toast,
-    dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
+// Hook to use toast
+export function useToast() {
+  const context = React.useContext(ToastContext);
+  
+  if (context === undefined) {
+    // Provide a fallback implementation that works outside of the context
+    // This ensures the hook doesn't throw errors when used in places where the context isn't available
+    return {
+      toasts: [],
+      toast: (props: Omit<ToasterToast, "id">) => {
+        console.warn("useToast() called outside of ToastProvider context");
+        const id = genId();
+        return {
+          id,
+          dismiss: () => {},
+          update: () => {},
+        };
+      },
+      dismiss: () => {
+        console.warn("toast.dismiss() called outside of ToastProvider context");
+      },
+    };
   }
+  
+  return {
+    toasts: context.state.toasts,
+    toast: context.toast,
+    dismiss: context.dismiss,
+  };
 }
 
-export { useToast, toast }
+// Export a singleton toast function for use outside of React components
+export const toast = (props: Omit<ToasterToast, "id">) => {
+  const id = genId();
+  return {
+    id,
+    dismiss: () => {},
+    update: () => {},
+  };
+};

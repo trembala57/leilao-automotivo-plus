@@ -1,5 +1,5 @@
 
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster, ToastProvider } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -23,36 +23,42 @@ import VIPAuctionsList from "./pages/VIPAuctionsList";
 import VIPAuctionDetail from "./pages/VIPAuctionDetail";
 import VehiclesHome from "./pages/VehiclesHome";
 
+// Create a new QueryClient instance
 const queryClient = new QueryClient();
 
 const App = () => (
+  // Make sure QueryClientProvider is the outermost provider
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
+    {/* Add our custom ToastProvider */}
+    <ToastProvider>
+      {/* Put BrowserRouter inside QueryClientProvider but outside TooltipProvider */}
       <BrowserRouter>
-        <Routes>
-          <Route element={<Layout />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/veiculos/home" element={<VehiclesHome />} />
-            <Route path="/auctions" element={<VIPAuctionsList />} />
-            <Route path="/auction/:id" element={<VIPAuctionDetail />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/dashboard" element={<AuthGuard><UserDashboardPage /></AuthGuard>} />
-            
-            {/* Original pages kept for reference */}
-            <Route path="/original-auctions" element={<AuctionsPage />} />
-            <Route path="/original-auction/:id" element={<AuctionDetailPage />} />
-          </Route>
-          <Route path="/admin" element={<AdminGuard><AdminLayout /></AdminGuard>}>
-            <Route index element={<AdminDashboardPage />} />
-            <Route path="vehicles" element={<AdminVehiclesPage />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <Routes>
+            <Route element={<Layout />}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/veiculos/home" element={<VehiclesHome />} />
+              <Route path="/auctions" element={<VIPAuctionsList />} />
+              <Route path="/auction/:id" element={<VIPAuctionDetail />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/dashboard" element={<AuthGuard><UserDashboardPage /></AuthGuard>} />
+              
+              {/* Original pages kept for reference */}
+              <Route path="/original-auctions" element={<AuctionsPage />} />
+              <Route path="/original-auction/:id" element={<AuctionDetailPage />} />
+            </Route>
+            <Route path="/admin" element={<AdminGuard><AdminLayout /></AdminGuard>}>
+              <Route index element={<AdminDashboardPage />} />
+              <Route path="vehicles" element={<AdminVehiclesPage />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </TooltipProvider>
       </BrowserRouter>
-    </TooltipProvider>
+    </ToastProvider>
   </QueryClientProvider>
 );
 
