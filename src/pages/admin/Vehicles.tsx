@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,13 +22,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Car, Plus, Search } from "lucide-react";
+import { Car, Plus, Search, Upload, Link, AlertCircle, FileText } from "lucide-react";
 import { VehicleAuction } from "@/components/auction/AuctionCard";
 import { formatCurrency } from "@/lib/format";
+import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
+import { Switch } from "@/components/ui/switch";
 
 const AdminVehicles = () => {
   const { toast } = useToast();
   const [isAddingVehicle, setIsAddingVehicle] = useState(false);
+  const [isProcessingBatch, setIsProcessingBatch] = useState(false);
+  const [batchProgress, setBatchProgress] = useState(0);
+  const [processedCount, setProcessedCount] = useState(0);
+  const [failedCount, setFailedCount] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Mock vehicles data
   const [vehicles, setVehicles] = useState<VehicleAuction[]>([
@@ -117,6 +125,136 @@ const AdminVehicles = () => {
     auctionType: "standard",
     endTime: "",
   });
+  
+  // Batch processing state
+  const [batchUrls, setBatchUrls] = useState("");
+  const [useAI, setUseAI] = useState(true);
+  
+  const handleBatchProcess = () => {
+    // Get URLs from textarea
+    const urls = batchUrls.split('\n').filter(url => url.trim() !== '');
+    
+    if (urls.length === 0) {
+      toast({
+        title: "Nenhuma URL fornecida",
+        description: "Por favor, insira pelo menos uma URL de leilão.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsProcessingBatch(true);
+    setBatchProgress(0);
+    setProcessedCount(0);
+    setFailedCount(0);
+    
+    // Process URLs with delay to show progress
+    const totalUrls = urls.length;
+    let processed = 0;
+    let failed = 0;
+    
+    toast({
+      title: "Processamento iniciado",
+      description: `Processando ${totalUrls} URLs de leilões`,
+    });
+    
+    // Mock batch processing with progress
+    const processNext = (index: number) => {
+      if (index >= urls.length) {
+        // All URLs processed
+        setIsProcessingBatch(false);
+        setBatchProgress(100);
+        
+        toast({
+          title: "Processamento concluído",
+          description: `${processedCount} veículos adicionados, ${failedCount} falhas`,
+        });
+        
+        setBatchUrls("");
+        return;
+      }
+      
+      const currentUrl = urls[index];
+      
+      // Simulate AI processing
+      setTimeout(() => {
+        try {
+          // Mock successful extraction 90% of the time
+          const success = Math.random() > 0.1;
+          
+          if (success) {
+            // Generate a mock vehicle
+            const makes = ["Honda", "Toyota", "Volkswagen", "BMW", "Ford", "Jeep"];
+            const models = ["Civic", "Corolla", "Golf", "X3", "Focus", "Compass"];
+            
+            const randomMake = makes[Math.floor(Math.random() * makes.length)];
+            const randomModel = models[Math.floor(Math.random() * models.length)];
+            const randomYear = 2018 + Math.floor(Math.random() * 6);
+            const randomPrice = 50000 + Math.floor(Math.random() * 100000);
+            
+            // Create new vehicle
+            const newId = (vehicles.length + 1).toString();
+            const mockVehicle: VehicleAuction = {
+              id: newId,
+              title: `${randomMake} ${randomModel} ${randomYear}`,
+              make: randomMake,
+              model: randomModel,
+              year: randomYear,
+              imageUrl: `https://source.unsplash.com/featured/?car,${randomMake}${randomModel}`,
+              currentBid: randomPrice,
+              minBidIncrement: 1000,
+              endTime: new Date(Date.now() + 3600000 * 24 * (7 + Math.floor(Math.random() * 14))).toISOString(),
+              status: "scheduled",
+              bidsCount: 0,
+            };
+            
+            setVehicles(prev => [...prev, mockVehicle]);
+            processed++;
+            setProcessedCount(processed);
+          } else {
+            failed++;
+            setFailedCount(failed);
+            console.error(`Falha ao processar: ${currentUrl}`);
+          }
+          
+          // Update progress
+          const progress = ((index + 1) / totalUrls) * 100;
+          setBatchProgress(progress);
+          
+          // Process next URL
+          processNext(index + 1);
+        } catch (error) {
+          console.error("Erro ao processar URL:", currentUrl, error);
+          failed++;
+          setFailedCount(failed);
+          
+          // Continue with next URL
+          processNext(index + 1);
+        }
+      }, 200); // Small delay to visualize progress
+    };
+    
+    // Start processing
+    processNext(0);
+  };
+  
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      // Assume each line contains a URL
+      setBatchUrls(content);
+      
+      toast({
+        title: "Arquivo carregado",
+        description: `${content.split('\n').filter(url => url.trim()).length} URLs encontradas`,
+      });
+    };
+    reader.readAsText(file);
+  };
   
   // Quick add vehicle by URL state
   const [quickAddUrl, setQuickAddUrl] = useState("");
@@ -222,19 +360,98 @@ const AdminVehicles = () => {
                 <Plus className="h-4 w-4 mr-2" /> Adicionar Veículo
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[525px]">
+            <DialogContent className="sm:max-w-[600px]">
               <DialogHeader>
                 <DialogTitle>Adicionar Novo Veículo</DialogTitle>
                 <DialogDescription>
-                  Preencha os detalhes do veículo para criar um novo leilão.
+                  Preencha os detalhes do veículo para criar um novo leilão ou importe de URLs.
                 </DialogDescription>
               </DialogHeader>
               
-              <Tabs defaultValue="quick">
-                <TabsList className="grid grid-cols-2 mb-4">
+              <Tabs defaultValue="batch">
+                <TabsList className="grid grid-cols-3 mb-4">
+                  <TabsTrigger value="batch">Adição em Lote</TabsTrigger>
                   <TabsTrigger value="quick">Adição Rápida</TabsTrigger>
                   <TabsTrigger value="manual">Adição Manual</TabsTrigger>
                 </TabsList>
+                
+                <TabsContent value="batch" className="space-y-4 py-2">
+                  <div className="space-y-2">
+                    <Label className="text-base font-semibold">URLs de Leilão em Lote</Label>
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <Upload className="h-4 w-4 mr-2" /> Importar Lista
+                      </Button>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileUpload}
+                        accept=".txt,.csv"
+                        className="hidden"
+                      />
+                      <span className="text-sm text-gray-500">ou cole as URLs abaixo (uma por linha)</span>
+                    </div>
+                    <Textarea
+                      placeholder="https://leilao.com/veiculo/1&#10;https://leilao.com/veiculo/2&#10;https://leilao.com/veiculo/3"
+                      value={batchUrls}
+                      onChange={(e) => setBatchUrls(e.target.value)}
+                      rows={8}
+                      className="font-mono text-sm"
+                    />
+                    <p className="text-xs text-gray-500">
+                      {batchUrls.split('\n').filter(url => url.trim() !== '').length} URLs detectadas
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Switch id="use-ai" checked={useAI} onCheckedChange={setUseAI} />
+                    <Label htmlFor="use-ai" className="cursor-pointer">
+                      <span className="font-medium">Utilizar IA para extração de dados</span>
+                      <p className="text-xs text-gray-500">
+                        A IA analisará as páginas de leilão para extrair informações automaticamente
+                      </p>
+                    </Label>
+                  </div>
+                  
+                  {isProcessingBatch && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Processando leilões...</span>
+                        <span className="text-sm text-gray-500">
+                          {processedCount + failedCount} de {batchUrls.split('\n').filter(url => url.trim() !== '').length}
+                        </span>
+                      </div>
+                      <Progress value={batchProgress} className="h-2" />
+                      <div className="flex justify-between text-xs">
+                        <span className="text-green-600">{processedCount} concluídos</span>
+                        {failedCount > 0 && <span className="text-red-600">{failedCount} falhas</span>}
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-end gap-2">
+                    <Button 
+                      type="button" 
+                      variant="outline"
+                      onClick={() => setBatchUrls("")}
+                      disabled={isProcessingBatch || !batchUrls.trim()}
+                    >
+                      Limpar
+                    </Button>
+                    <Button 
+                      type="button" 
+                      onClick={handleBatchProcess}
+                      disabled={isProcessingBatch || !batchUrls.trim()}
+                    >
+                      {isProcessingBatch ? "Processando..." : "Processar em Lote"}
+                    </Button>
+                  </div>
+                </TabsContent>
                 
                 <TabsContent value="quick">
                   <div className="space-y-4 py-2">
