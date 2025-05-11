@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import type {
@@ -53,9 +54,13 @@ interface State {
   toasts: ToasterToast[]
 }
 
-const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
-
-const addToRemoveQueue = (toastId: string) => {
+// Modified to accept dispatch as a parameter since it's no longer global
+const addToRemoveQueue = (
+  toastId: string, 
+  dispatch: React.Dispatch<Action>
+) => {
+  const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
+  
   if (toastTimeouts.has(toastId)) {
     return
   }
@@ -89,16 +94,6 @@ export const reducer = (state: State, action: Action): State => {
 
     case "DISMISS_TOAST": {
       const { toastId } = action
-
-      // ! Side effects ! - This could be extracted into a dismissToast() action,
-      // but I'll keep it here for simplicity
-      if (toastId) {
-        addToRemoveQueue(toastId)
-      } else {
-        state.toasts.forEach((toast) => {
-          addToRemoveQueue(toast.id)
-        })
-      }
 
       return {
         ...state,
@@ -138,34 +133,37 @@ const initialState: State = { toasts: [] };
 
 // Provider component
 export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const [state, setStateInternal] = React.useState<State>(initialState);
+  const [state, dispatch] = React.useReducer(reducer, initialState);
   
-  const setState = (nextState: State | ((prevState: State) => State)) => {
-    if (typeof nextState === 'function') {
-      setStateInternal((prevState) => nextState(prevState));
+  // Handle the dismiss side effects
+  const handleDismissToast = React.useCallback((toastId?: string) => {
+    if (toastId) {
+      addToRemoveQueue(toastId, dispatch);
     } else {
-      setStateInternal(nextState);
+      state.toasts.forEach((toast) => {
+        addToRemoveQueue(toast.id, dispatch);
+      });
     }
-  };
+    
+    dispatch({
+      type: "DISMISS_TOAST",
+      toastId,
+    });
+  }, [state.toasts]);
   
   const toast = React.useCallback((props: Omit<ToasterToast, "id">) => {
     const id = genId();
     
     const update = (props: ToasterToast) => {
-      setState((prevState) => reducer(prevState, {
+      dispatch({
         type: "UPDATE_TOAST",
         toast: { ...props, id },
-      }));
+      });
     };
     
-    const dismiss = () => {
-      setState((prevState) => reducer(prevState, {
-        type: "DISMISS_TOAST",
-        toastId: id,
-      }));
-    };
+    const dismiss = () => handleDismissToast(id);
     
-    setState((prevState) => reducer(prevState, {
+    dispatch({
       type: "ADD_TOAST",
       toast: {
         ...props,
@@ -175,27 +173,20 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           if (!open) dismiss();
         },
       },
-    }));
+    });
     
     return {
       id,
       dismiss,
       update,
     };
-  }, []);
+  }, [handleDismissToast]);
   
-  const dismiss = React.useCallback((toastId?: string) => {
-    setState((prevState) => reducer(prevState, {
-      type: "DISMISS_TOAST",
-      toastId,
-    }));
-  }, []);
-
   const contextValue = React.useMemo(() => ({
     state,
     toast,
-    dismiss
-  }), [state, toast, dismiss]);
+    dismiss: handleDismissToast
+  }), [state, toast, handleDismissToast]);
 
   return (
     <ToastContext.Provider value={contextValue}>
