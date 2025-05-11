@@ -1,4 +1,3 @@
-
 import { VehicleAuction } from "@/components/auction/AuctionCard";
 
 // Mock data for auctions
@@ -349,27 +348,27 @@ export const sendPixKeyToWinner = async (auctionId: string, bidId: string, pixKe
   };
 };
 
-// Update the VehicleAuction interface to fix the errors
-// Use a separate interface and augment the module instead of redeclaring
+// Create a dedicated interface for our extended auction type that includes bids
 export interface VehicleAuctionExtended extends VehicleAuction {
   bids?: Bid[];
 }
 
-// Properly augment the module to extend the interface
+// Properly augment the module to match the original interface exactly
 declare module "@/components/auction/AuctionCard" {
-  export interface VehicleAuction {
+  interface VehicleAuction {
     id: string;
     title: string;
     make: string;
     model: string;
     year: number;
-    imageUrl: string;
+    imageUrl?: string;
+    image?: string;
     currentBid: number;
     initialBid?: number;
-    minBidIncrement: number;
+    minBidIncrement?: number;
     endTime: string;
     status: "active" | "ended" | "scheduled";
-    bidsCount: number;
+    bidsCount?: number;
     location?: string;
     lotNumber?: string;
     color?: string;
@@ -377,7 +376,6 @@ declare module "@/components/auction/AuctionCard" {
     financing?: boolean;
     condition?: string;
     km?: number;
-    image?: string;
     totalBids?: number;
     bids?: Bid[];
   }
