@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -38,7 +37,7 @@ const Index = () => {
     fetchAuctions();
   }, []);
 
-  // Banner slides data
+  // Banner slides data com os novos banners
   const bannerSlides = [
     {
       id: 1,
@@ -47,7 +46,7 @@ const Index = () => {
       description: "Chegou a hora de arrematar seu novo carro!",
       ctaText: "Participe!",
       ctaLink: "/auctions",
-      imagePath: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+      imagePath: "https://armazviplprd.blob.core.windows.net/prod/551f629c-f102-4da7-8dba-b44abcb249b4",
       bgColor: "from-primary to-blue-800"
     },
     {
@@ -57,8 +56,18 @@ const Index = () => {
       description: "Encontre as melhores oportunidades em veículos",
       ctaText: "Ver Agenda",
       ctaLink: "/agenda",
-      imagePath: "https://images.unsplash.com/photo-1583121274602-3e2820c69888?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+      imagePath: "https://armazviplprd.blob.core.windows.net/prod/32e9e6f3-25f7-4621-867d-5ea6e2f1365a",
       bgColor: "from-accent to-red-700"
+    },
+    {
+      id: 3,
+      title: "Oportunidades Imperdíveis",
+      subtitle: "Leilões Semanais",
+      description: "Encontre seu próximo veículo com as melhores condições",
+      ctaText: "Confira",
+      ctaLink: "/auctions",
+      imagePath: "https://armazviplprd.blob.core.windows.net/prod/2be6fc81-5e30-4b2f-ba07-d01df7fa6fef",
+      bgColor: "from-blue-600 to-blue-900"
     }
   ];
 
