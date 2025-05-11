@@ -138,7 +138,15 @@ const initialState: State = { toasts: [] };
 
 // Provider component
 export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = React.useState<State>(initialState);
+  const [state, setStateInternal] = React.useState<State>(initialState);
+  
+  const setState = (nextState: State | ((prevState: State) => State)) => {
+    if (typeof nextState === 'function') {
+      setStateInternal((prevState) => nextState(prevState));
+    } else {
+      setStateInternal(nextState);
+    }
+  };
   
   const toast = React.useCallback((props: Omit<ToasterToast, "id">) => {
     const id = genId();
@@ -183,8 +191,14 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  const contextValue = React.useMemo(() => ({
+    state,
+    toast,
+    dismiss
+  }), [state, toast, dismiss]);
+
   return (
-    <ToastContext.Provider value={{ state, toast, dismiss }}>
+    <ToastContext.Provider value={contextValue}>
       {children}
     </ToastContext.Provider>
   );
