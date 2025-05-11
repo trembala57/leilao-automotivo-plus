@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 
 interface AuthContextType {
   isAuthenticated: boolean;
+  isLoading: boolean; // Added this property
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
@@ -22,6 +23,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // Added loading state
 
   // Simulated authentication state
   useEffect(() => {
@@ -32,10 +34,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(parsedUser);
       setIsAuthenticated(true);
     }
+    // Set loading to false after checking authentication
+    setIsLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
     // Simulate API call
+    setIsLoading(true); // Set loading when login starts
     await new Promise((resolve) => setTimeout(resolve, 1000));
     
     // In a real app, would validate credentials with backend
@@ -65,6 +70,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(user);
     setIsAuthenticated(true);
     localStorage.setItem("user", JSON.stringify(user));
+    setIsLoading(false); // Set loading to false when login completes
   };
 
   const logout = () => {
@@ -75,6 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const register = async (name: string, email: string, password: string) => {
     // Simulate API call
+    setIsLoading(true); // Set loading when registration starts
     await new Promise((resolve) => setTimeout(resolve, 1000));
     
     // In a real app, would register the user with backend
@@ -89,10 +96,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(user);
     setIsAuthenticated(true);
     localStorage.setItem("user", JSON.stringify(user));
+    setIsLoading(false); // Set loading to false when registration completes
   };
 
   const authContextValue: AuthContextType = {
     isAuthenticated,
+    isLoading, // Added this property to the context value
     user,
     login,
     logout,
@@ -113,4 +122,3 @@ export const useAuth = () => {
   }
   return context;
 };
-
