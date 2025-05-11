@@ -1,3 +1,4 @@
+
 import { VehicleAuction } from "@/components/auction/AuctionCard";
 
 // Mock data for auctions
@@ -348,7 +349,13 @@ export const sendPixKeyToWinner = async (auctionId: string, bidId: string, pixKe
   };
 };
 
-// Adicione a interface VehicleAuction atualizada para incluir os lances
+// Update the VehicleAuction interface to fix the errors
+// Use a separate interface and augment the module instead of redeclaring
+export interface VehicleAuctionExtended extends VehicleAuction {
+  bids?: Bid[];
+}
+
+// Properly augment the module to extend the interface
 declare module "@/components/auction/AuctionCard" {
   export interface VehicleAuction {
     id: string;
