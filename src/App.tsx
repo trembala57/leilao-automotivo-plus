@@ -12,6 +12,7 @@ import RegisterPage from "./pages/Register";
 import UserDashboardPage from "./pages/UserDashboard";
 import AdminDashboardPage from "./pages/admin/Dashboard";
 import AdminVehiclesPage from "./pages/admin/Vehicles";
+import AdminDocumentsPage from "./pages/admin/Documents";
 import NotFound from "./pages/NotFound";
 import Layout from "./components/Layout";
 import AdminLayout from "./components/admin/AdminLayout";
@@ -53,6 +54,7 @@ const App = () => (
             <Route path="/admin" element={<AdminGuard><AdminLayout /></AdminGuard>}>
               <Route index element={<AdminDashboardPage />} />
               <Route path="vehicles" element={<AdminVehiclesPage />} />
+              <Route path="documents" element={<AdminDocumentsPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
