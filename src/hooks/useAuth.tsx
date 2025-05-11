@@ -1,109 +1,116 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: 'user' | 'admin';
-  isVerified: boolean;
-}
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 interface AuthContextType {
-  user: User | null;
   isAuthenticated: boolean;
-  isLoading: boolean;
+  user: User | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   register: (name: string, email: string, password: string) => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  isVerified: boolean;
+  role: 'user' | 'admin';
+}
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+const AuthContext = createContext<AuthContextType | null>(null);
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
+  // Simulated authentication state
   useEffect(() => {
-    // Check if user is stored in localStorage
-    const storedUser = localStorage.getItem('user');
+    // Check if user is logged in using localStorage
+    const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      setIsAuthenticated(true);
     }
-    setIsLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
-    // Mock login functionality for now
-    // In a real app, this would call an API endpoint
-    setIsLoading(true);
-    
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     
-    // For demo purposes, we'll accept any email that includes "admin" as an admin user
-    const isAdmin = email.includes('admin');
+    // In a real app, would validate credentials with backend
+    // For demo purposes, accept any email/password and set user role
     
-    const mockUser: User = {
-      id: '123',
-      name: isAdmin ? 'Admin User' : 'Regular User',
-      email,
-      role: isAdmin ? 'admin' : 'user',
-      isVerified: true,
-    };
+    let role: 'user' | 'admin' = 'user';
+    let isVerified = true;
     
-    // Store in localStorage and state
-    localStorage.setItem('user', JSON.stringify(mockUser));
-    setUser(mockUser);
-    setIsLoading(false);
-  };
+    // Set admin role for specific emails
+    if (email === 'admin@example.com') {
+      role = 'admin';
+    }
+    
+    // For demo, set some users as unverified
+    if (email === 'unverified@example.com') {
+      isVerified = false;
+    }
 
-  const register = async (name: string, email: string, password: string) => {
-    // Mock registration functionality
-    setIsLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const newUser: User = {
-      id: '456',
-      name,
+    const user = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: email.split('@')[0],
       email,
-      role: 'user',
-      isVerified: false,
+      isVerified,
+      role
     };
     
-    // Store in localStorage and state
-    localStorage.setItem('user', JSON.stringify(newUser));
-    setUser(newUser);
-    setIsLoading(false);
+    setUser(user);
+    setIsAuthenticated(true);
+    localStorage.setItem("user", JSON.stringify(user));
   };
 
   const logout = () => {
-    localStorage.removeItem('user');
     setUser(null);
+    setIsAuthenticated(false);
+    localStorage.removeItem("user");
+  };
+
+  const register = async (name: string, email: string, password: string) => {
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    
+    // In a real app, would register the user with backend
+    const user = {
+      id: Math.random().toString(36).substr(2, 9),
+      name,
+      email,
+      isVerified: false, // New users start unverified
+      role: 'user' as const
+    };
+    
+    setUser(user);
+    setIsAuthenticated(true);
+    localStorage.setItem("user", JSON.stringify(user));
+  };
+
+  const authContextValue: AuthContextType = {
+    isAuthenticated,
+    user,
+    login,
+    logout,
+    register,
   };
 
   return (
-    <AuthContext.Provider 
-      value={{ 
-        user, 
-        isAuthenticated: !!user, 
-        isLoading, 
-        login, 
-        logout, 
-        register 
-      }}
-    >
+    <AuthContext.Provider value={authContextValue}>
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
-export function useAuth() {
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-}
+};
+

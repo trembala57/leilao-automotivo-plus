@@ -1,4 +1,3 @@
-
 import { VehicleAuction } from "@/components/auction/AuctionCard";
 
 // Mock data for auctions
@@ -15,6 +14,11 @@ const mockAuctions: VehicleAuction[] = [
     endTime: new Date(Date.now() + 3600000 * 24 * 2).toISOString(), // 2 days from now
     status: "active",
     bidsCount: 12,
+    bids: [
+      { id: "b1", userId: "user1", amount: 98500, timestamp: new Date().toISOString(), status: "pending" },
+      { id: "b2", userId: "user2", amount: 98000, timestamp: new Date(Date.now() - 3600000).toISOString(), status: "rejected" },
+      { id: "b3", userId: "user3", amount: 97500, timestamp: new Date(Date.now() - 7200000).toISOString(), status: "accepted" }
+    ]
   },
   {
     id: "2",
@@ -28,6 +32,10 @@ const mockAuctions: VehicleAuction[] = [
     endTime: new Date(Date.now() + 3600000 * 5).toISOString(), // 5 hours from now
     status: "active",
     bidsCount: 23,
+    bids: [
+      { id: "b4", userId: "user5", amount: 120000, timestamp: new Date().toISOString(), status: "pending" },
+      { id: "b5", userId: "user1", amount: 119000, timestamp: new Date(Date.now() - 3600000).toISOString(), status: "rejected" }
+    ]
   },
   {
     id: "3",
@@ -177,8 +185,193 @@ export const submitBid = async (auctionId: string, amount: number): Promise<{ su
   auction.currentBid = amount;
   auction.bidsCount += 1;
   
+  // Add the bid to the auction's bids array
+  const newBid = {
+    id: `b${Math.floor(Math.random() * 1000)}`,
+    userId: `user${Math.floor(Math.random() * 10) + 1}`,
+    amount,
+    timestamp: new Date().toISOString(),
+    status: "pending" as const
+  };
+  
+  if (!auction.bids) {
+    auction.bids = [];
+  }
+  
+  auction.bids.push(newBid);
+  
   return { 
     success: true, 
     message: 'Lance registrado com sucesso!' 
   };
 };
+
+// Funções para gerenciamento dos lances
+export interface Bid {
+  id: string;
+  userId: string;
+  amount: number;
+  timestamp: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  userInfo?: {
+    name: string;
+    email: string;
+    phone?: string;
+  };
+}
+
+// Get all bids for an auction
+export const getAuctionBids = async (auctionId: string): Promise<Bid[]> => {
+  // Simulate API call delay
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  
+  const auction = mockAuctions.find(a => a.id === auctionId);
+  if (!auction || !auction.bids) {
+    return [];
+  }
+  
+  // Simulando informações de usuários para os lances
+  return auction.bids.map(bid => ({
+    ...bid,
+    userInfo: {
+      name: `Usuário ${bid.userId.replace('user', '')}`,
+      email: `user${bid.userId.replace('user', '')}@example.com`,
+      phone: `+55 11 9${Math.floor(Math.random() * 100000000)}`.replace(/(\d{2})(\d{5})(\d{4})/, '$1 $2-$3')
+    }
+  }));
+};
+
+// Accept a bid
+export const acceptBid = async (auctionId: string, bidId: string): Promise<{ success: boolean; message: string }> => {
+  // Simulate API call delay
+  await new Promise((resolve) => setTimeout(resolve, 800));
+  
+  const auction = mockAuctions.find(a => a.id === auctionId);
+  if (!auction || !auction.bids) {
+    return { 
+      success: false, 
+      message: 'Leilão ou lance não encontrado' 
+    };
+  }
+  
+  const bid = auction.bids.find(b => b.id === bidId);
+  if (!bid) {
+    return { 
+      success: false, 
+      message: 'Lance não encontrado' 
+    };
+  }
+  
+  // Atualizar status para 'accepted'
+  bid.status = 'accepted';
+  
+  // Rejeitar automaticamente todos os outros lances do mesmo leilão
+  auction.bids.forEach(b => {
+    if (b.id !== bidId && b.status === 'pending') {
+      b.status = 'rejected';
+    }
+  });
+  
+  // Marcar o leilão como encerrado
+  auction.status = 'ended';
+  
+  return { 
+    success: true, 
+    message: 'Lance aceito com sucesso!' 
+  };
+};
+
+// Reject a bid
+export const rejectBid = async (auctionId: string, bidId: string): Promise<{ success: boolean; message: string }> => {
+  // Simulate API call delay
+  await new Promise((resolve) => setTimeout(resolve, 800));
+  
+  const auction = mockAuctions.find(a => a.id === auctionId);
+  if (!auction || !auction.bids) {
+    return { 
+      success: false, 
+      message: 'Leilão ou lance não encontrado' 
+    };
+  }
+  
+  const bid = auction.bids.find(b => b.id === bidId);
+  if (!bid) {
+    return { 
+      success: false, 
+      message: 'Lance não encontrado' 
+    };
+  }
+  
+  // Atualizar status para 'rejected'
+  bid.status = 'rejected';
+  
+  return { 
+    success: true, 
+    message: 'Lance rejeitado com sucesso!' 
+  };
+};
+
+// Send PIX key to the winner
+export const sendPixKeyToWinner = async (auctionId: string, bidId: string, pixKey: string): Promise<{ success: boolean; message: string }> => {
+  // Simulate API call delay
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  
+  const auction = mockAuctions.find(a => a.id === auctionId);
+  if (!auction || !auction.bids) {
+    return { 
+      success: false, 
+      message: 'Leilão ou lance não encontrado' 
+    };
+  }
+  
+  const bid = auction.bids.find(b => b.id === bidId);
+  if (!bid) {
+    return { 
+      success: false, 
+      message: 'Lance não encontrado' 
+    };
+  }
+  
+  if (bid.status !== 'accepted') {
+    return { 
+      success: false, 
+      message: 'Apenas lances aceitos podem receber a chave PIX' 
+    };
+  }
+  
+  // Em um app real, aqui enviaríamos um email com a chave PIX
+  console.log(`Enviando chave PIX ${pixKey} para o usuário ${bid.userId} pelo lance ${bid.id} do leilão ${auctionId}`);
+  
+  return { 
+    success: true, 
+    message: 'Chave PIX enviada com sucesso para o vencedor!' 
+  };
+};
+
+// Adicione a interface VehicleAuction atualizada para incluir os lances
+declare module "@/components/auction/AuctionCard" {
+  export interface VehicleAuction {
+    id: string;
+    title: string;
+    make: string;
+    model: string;
+    year: number;
+    imageUrl: string;
+    currentBid: number;
+    initialBid?: number;
+    minBidIncrement: number;
+    endTime: string;
+    status: "active" | "ended" | "scheduled";
+    bidsCount: number;
+    location?: string;
+    lotNumber?: string;
+    color?: string;
+    fuel?: string;
+    financing?: boolean;
+    condition?: string;
+    km?: number;
+    image?: string;
+    totalBids?: number;
+    bids?: Bid[];
+  }
+}
