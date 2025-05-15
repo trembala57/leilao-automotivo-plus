@@ -27,6 +27,8 @@ type CarouselContextProps = {
   scrollNext: () => void
   canScrollPrev: boolean
   canScrollNext: boolean
+  activeIndex: number
+  scrollTo: (index: number) => void
 } & CarouselProps
 
 const CarouselContext = React.createContext<CarouselContextProps | null>(null)
@@ -263,9 +265,8 @@ const CarouselDots = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => {
-  const { api } = useCarousel()
+  const { api, activeIndex, scrollTo } = useCarousel()
   const slideCount = api?.slideNodes().length || 0
-  const { activeIndex, scrollTo } = useCarousel()
 
   return (
     <div 
