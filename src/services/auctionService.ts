@@ -1,3 +1,4 @@
+
 import { VehicleAuction } from "@/components/auction/AuctionCard";
 
 // Mock data for auctions
@@ -378,5 +379,6 @@ declare module "@/components/auction/AuctionCard" {
     km?: number;
     totalBids?: number;
     bids?: Bid[];
+    partnerLogo?: string; // Added for partner logos
   }
 }

@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { formatCurrency } from "@/lib/format";
 import AuctionTimer from "./AuctionTimer";
@@ -23,6 +24,7 @@ export interface VehicleAuction {
   location?: string;
   lotNumber?: string;
   financing?: boolean;
+  partnerLogo?: string; // Added for partner logos in auction cards
   
   // Properties for VIPAuctionDetail
   color?: string;
