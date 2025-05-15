@@ -8,11 +8,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import AuctionCard, { VehicleAuction } from "@/components/auction/AuctionCard";
 import VIPAuctionCard from "@/components/auction/VIPAuctionCard";
 import { getAllAuctions, filterAuctions } from "@/services/auctionService";
 import { Car, Truck, Clock, Search, MessageCircle, ChevronRight, CalendarRange, Car as CarIcon } from "lucide-react";
 import Banner from "@/components/Banner";
+
+// Partner logos for the auction lots
+const partnerLogos = [
+  "/partnerlogos/bradesco.png",
+  "/partnerlogos/itau.png",
+  "/partnerlogos/santander.png",
+  "/partnerlogos/caixa.png",
+  "/partnerlogos/bb.png",
+  "/partnerlogos/detran.png",
+  "/partnerlogos/porto.png",
+  "/partnerlogos/sulamerica.png",
+];
 
 const Index = () => {
   const [featuredAuctions, setFeaturedAuctions] = useState<VehicleAuction[]>([]);
@@ -26,7 +39,14 @@ const Index = () => {
         
         // Filter active auctions for featured
         const active = allAuctions.filter(auction => auction.status === "active");
-        setFeaturedAuctions(active.slice(0, 20));
+        
+        // Assign random partner logos to auctions for display
+        const auctionsWithLogos = active.slice(0, 20).map((auction, index) => ({
+          ...auction,
+          partnerLogo: partnerLogos[index % partnerLogos.length]
+        }));
+        
+        setFeaturedAuctions(auctionsWithLogos);
       } catch (error) {
         console.error("Error fetching auctions:", error);
       } finally {
@@ -169,14 +189,80 @@ const Index = () => {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {featuredAuctions.map((auction) => (
-                <VIPAuctionCard key={auction.id} auction={{
-                  ...auction,
-                  lotNumber: `L${auction.id.substring(0, 5)}`,
-                  location: ["São Paulo", "Rio de Janeiro", "Minas Gerais", "Paraná"][Math.floor(Math.random() * 4)],
-                  initialBid: Math.floor(auction.currentBid * 0.8),
-                  totalBids: auction.bidsCount,
-                  financing: Math.random() > 0.7
-                }} />
+                <div key={auction.id} className="bg-white border border-gray-200 rounded-sm overflow-hidden h-full flex flex-col">
+                  {/* Card Header with Partner Logo */}
+                  <div className="bg-gray-100 border-b border-gray-200 p-2 flex justify-between items-center">
+                    <div className="h-6 flex items-center justify-start overflow-hidden">
+                      {auction.partnerLogo && (
+                        <img 
+                          src={auction.partnerLogo} 
+                          alt="Parceiro" 
+                          className="h-5 object-contain"
+                        />
+                      )}
+                    </div>
+                    <div className="text-xs font-medium text-gray-700">
+                      Lote: {auction.id.substring(0, 5)}
+                    </div>
+                  </div>
+
+                  {/* Auction Image */}
+                  <Link to={`/auction/${auction.id}`} className="block relative">
+                    <AspectRatio ratio={16 / 9}>
+                      <img
+                        src={auction.imageUrl || "https://placehold.co/300x200?text=No+Image"}
+                        alt={auction.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </AspectRatio>
+                    
+                    {/* Status Badge */}
+                    <div className="absolute top-2 right-2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-sm">
+                      Em leilão
+                    </div>
+                    
+                    {/* Finance Badge */}
+                    {Math.random() > 0.7 && (
+                      <div className="absolute bottom-0 right-0 bg-red-600 text-white text-xs font-bold px-2 py-1 uppercase">
+                        Financie
+                      </div>
+                    )}
+                  </Link>
+
+                  {/* Auction Details */}
+                  <div className="p-3 flex flex-col h-full">
+                    <Link to={`/auction/${auction.id}`} className="block">
+                      <h3 className="text-sm font-bold text-blue-700 hover:underline truncate">
+                        {auction.title}
+                      </h3>
+                    </Link>
+                    
+                    <div className="text-xs text-gray-600 mb-2">
+                      {auction.make} {auction.model} • {auction.year}
+                    </div>
+
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-gray-500">Lance atual:</span>
+                      <span className="text-sm font-bold text-blue-700">
+                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(auction.currentBid)}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">Lances:</span>
+                      <span className="text-xs text-gray-700">{auction.bidsCount || Math.floor(Math.random() * 15)}</span>
+                    </div>
+                    
+                    <div className="mt-3">
+                      <Link 
+                        to={`/auction/${auction.id}`}
+                        className="block w-full bg-gray-200 hover:bg-gray-300 text-center text-gray-700 text-xs font-medium py-1.5 rounded-sm"
+                      >
+                        Ver detalhes
+                      </Link>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           )}
